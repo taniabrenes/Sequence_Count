@@ -4,6 +4,8 @@
 Created on Thu Mar 23 10:02:04 2017
 
 @author: tbrenes
+
+Input read1 + read2 of a fastq sequence, or a tab delimited file.
 """
 
 import gzip
@@ -70,8 +72,10 @@ else:
         n += 1
         sys.stdout.write( line )
 
-# output
+# output the sequence count on a sepparate file. This is to avoid it going
+# into the std out with the sequence
 
-print "\nTotal number of sequences is: %s" % n    
-
+out = open ("Count_Output", "a") 
+out.write("\nTotal number of sequences is: %s\n" % n)
+out.close()
 
