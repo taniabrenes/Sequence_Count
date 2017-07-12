@@ -11,21 +11,29 @@ Input read1 + read2 of a fastq sequence, or a tab delimited file.
 import gzip
 import sys
 import timeit
+from optparse import OptionParser
 
-pyargs = len(sys.argv)
+parser = OptionParser()
+parser.add_option("-q", "--quite", action = "store_false",
+                  help = "don't print sequence to std out", 
+                  dest = "verbose", default = True)
 
-if pyargs == 1:
+(options, args) = parser.parse_args()
+
+pyargs = len(args)
+
+if pyargs == 0:
 	r1 = sys.stdin
 
-if pyargs > 1:
-    r1f = sys.argv[1]
+if pyargs > 0:
+    r1f = args[0]
     if r1f.split('.')[-1] == 'gz':
         r1 = gzip.open(r1f)
     else:
         r1 = open(r1f)
 
-    if pyargs == 3:
-        r2f = sys.argv[2]
+    if pyargs == 2:
+        r2f = args[1]
         if r1f.split('.')[-1] == 'gz':
             r2 = gzip.open(r2f)
         else:
@@ -33,14 +41,16 @@ if pyargs > 1:
 
 n = 0
 
-## If file is already tab delimited do a simple count of lines and pipe to console.
+## If file is already tab delimited do a simple count of lines and pipe 
+## to console.
 ID1 = r1.readline().strip()
 r1.seek(0)
 
 if len(ID1.split('\t')) > 1:
     for line in r1:
-        	n += 1
-        	sys.stdout.write(line)
+        n += 1
+        if options.verbose:
+            sys.stdout.write(line)
 
 ## If file is not tab delimited convert to tab before pipe to console.
 else:
@@ -60,21 +70,25 @@ else:
         nn2 = r2.readline().strip()
         qc2 = r2.readline().strip()
     
+    # compare the seq id of r1 and r1 to make sure they match. It compares 
+    # lines only up to pos 39 because after that there name has the read #
         if ID1[:39] != ID2[:39]:
             break
             print "Sequence IDs do not match between reads\n"
-    
+    # checks for the symbol + to make sure files are fastq format
         if nn1 != "+" or nn2 != "+":
             break
             print "Reads file may not be in fastq format\n"
     
         line  = '\t'.join([ID1, Seq1, qc1, Seq2, qc2 + "\n"])
         n += 1
-        sys.stdout.write( line )
+        if options.verbose:
+            sys.stdout.write( line )
 
 # output the sequence count on a sepparate file. This is to avoid it going
 # into the std out with the sequence
 
+sys.stderr.write("\nTotal number of sequences is: %s\n" % n)
 out = open ("Count_Output", "a") 
 out.write("\nTotal number of sequences is: %s\n" % n)
 out.close()
