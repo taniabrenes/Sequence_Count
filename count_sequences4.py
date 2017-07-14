@@ -31,14 +31,12 @@ parser.add_argument("-o", "--output", action = "store",
 
 args = parser.parse_args()
 
-n = 0
-
 if type(args.reads) == file:
-    r1 = args.reads[0]
+    r1 = args.reads
 
     ## Check if stdin file is already tab delimited 
     l1 = r1.readline().strip()
-    r1.seek(0)
+    n = 1
     
     if len(l1.split('\t')) > 1:
         for line in r1:
@@ -77,6 +75,8 @@ else:
 
     r1.seek(0)
     r2.seek(0)
+    
+    n = 0
 
     # an open loop to read r1 and r2
     while True:
